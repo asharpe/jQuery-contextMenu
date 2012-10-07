@@ -232,10 +232,11 @@ var // currently active contextMenu trigger
 				return;
 			}
 
-            if (!$this.hasClass('context-menu-disabled')) {
+//            if (!$this.hasClass('context-menu-disabled')) {
 				// we're handling the event so we'll stop it
-				e.preventDefault();
-				e.stopImmediatePropagation();
+//				e.preventDefault();
+//				e.stopImmediatePropagation();
+				handle.abortevent(e);
 
                 // theoretically need to fire a show event at <menu>
                 // http://www.whatwg.org/specs/web-apps/current-work/multipage/interactive-elements.html#context-menus
@@ -257,10 +258,13 @@ var // currently active contextMenu trigger
                     if (!e.data.items || $.isEmptyObject(e.data.items)) {
                         // Note: jQuery captures and ignores errors from event handlers
                         if (window.console) {
-                            (console.error || console.log)("No items specified to show in contextMenu");
+							if (console.error)
+								console.error("No items specified to show in contextMenu");
+							else if (console.log)
+								console.log("No items specified to show in contextMenu");
                         }
 
-                        throw new Error('No Items sepcified');
+                        throw new Error('No Items specified');
                     }
 
                     // backreference for custom command type creation
@@ -270,7 +274,7 @@ var // currently active contextMenu trigger
                 }
                 // show menu
                 op.show.call($this, e.data, e.pageX, e.pageY);
-            }
+//            }
         },
         // contextMenu left-click trigger
         click: function(e) {
@@ -957,7 +961,8 @@ var // currently active contextMenu trigger
             root.accesskeys || (root.accesskeys = {});
 
             // create contextMenu items
-            $.each(opt.items, function(key, item){
+//            $.each(opt.items, function(key, item){
+			function createMenu(key, item) {
                 var $t = $('<li class="context-menu-item ' + (item.className || "") +'"></li>'),
                     $label = null,
                     $input = null;
@@ -1100,7 +1105,19 @@ var // currently active contextMenu trigger
                     // browsers supporting neither will not be preventing text-selection
                     $t.on('selectstart.disableTextSelect', handle.abortevent);
                 }
-            });
+            };
+
+			// order by the 'order' property on items (if it's there)
+			if (opt.items['order']) {
+				var order = opt.items.order;
+				$.each(order, function(i, type) {
+					createMenu(type, opt.items[type]);
+				});
+			}
+			else {
+				$.each(opt.items, createMenu);
+			}
+
             // attach contextMenu to <body> (to bypass any possible overflow:hidden issues on parents of the trigger element)
             if (!opt.$node) {
                 opt.$menu.css('display', 'none').addClass('context-menu-root');
@@ -1114,6 +1131,7 @@ var // currently active contextMenu trigger
                 // determine widths of submenus, as CSS won't grow them automatically
                 // position:absolute > position:absolute; min-width:100; max-width:200; results in width: 100;
                 // kinda sucks hard...
+				// TODO try relative positioning
                 opt.$menu.find('ul').andSelf().css({position: 'static', display: 'block'}).each(function(){
                     var $this = $(this);
                     $this.width($this.css('position', 'absolute').width())
@@ -1206,14 +1224,41 @@ $.fn.contextMenu = function(operation) {
         $menu && $menu.trigger('contextmenu:hide');
     } else if (operation) {
 		var menu = menus[namespaces[this.selector]];
-		menu.disabled = false;
-        this.removeClass('context-menu-disabled');
+		// TODO find out when this is invalid
+		if (menu) {
+			menu.disabled = false;
+console.log('enabled menu at', this.selector)
+		}
+		else {
+console.log('Invalid enabling of context menu');
+console.trace();
+console.log('this', this);
+console.log('selector', this.selector);
+console.log('namespaces', namespaces);
+console.log('menus', menus);
+		}
+
+//        this.removeClass('context-menu-disabled');
     } else if (!operation) {
 		var menu = menus[namespaces[this.selector]];
 		menu.disabled = true;
+console.log('disabled menu at', this.selector);
 		// TODO should we keep doing this?
-        this.addClass('context-menu-disabled');
+//        this.addClass('context-menu-disabled');
     }
+
+function findSelector(ns) {
+	var selector = '';
+	$.each(namespaces, function(k, v) {
+		selector = v == ns ? k : selector;
+	});
+	return selector;
+}
+
+// show the state of each menu
+//$.each(menus, function(k, v) {
+//	console.log('menu status', k, findSelector(k), v.disabled);
+//})
 
     return this;
 };
