@@ -127,9 +127,10 @@ var // currently active contextMenu trigger
 //                offset.top -= height;
 //            }
 
-            if (offset.left + width > right) {
-                offset.left -= width;
-            }
+// this code pushes the menu to the left of the window :-/
+//            if (offset.left + width > right) {
+//                offset.left -= width;
+//            }
 
             opt.$menu.css(offset);
         },
