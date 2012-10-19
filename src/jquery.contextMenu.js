@@ -123,14 +123,14 @@ var // currently active contextMenu trigger
                 width = opt.$menu.width();
 
 // this code pushes the menu above the window top :-/
-//            if (offset.top + height > bottom) {
-//                offset.top -= height;
-//            }
+            if (offset.top + height > bottom) {
+                offset.top -= height;
+            }
 
 // this code pushes the menu to the left of the window :-/
-//            if (offset.left + width > right) {
-//                offset.left -= width;
-//            }
+            if (offset.left + width > right) {
+                offset.left -= width;
+            }
 
             opt.$menu.css(offset);
         },
@@ -214,6 +214,12 @@ var // currently active contextMenu trigger
 //            e.preventDefault();
 //            e.stopImmediatePropagation();
 
+			// if the event was triggered programmaticly (e.type == 'contextmenu')
+			// then we'll let it through, otherwise we perform the paltry checks
+			// below
+
+			if (e.type !== 'contextmenu') {
+
             // abort native-triggered events unless we're triggering on right click
             if (e.data.trigger != 'right' && e.originalEvent) {
                 return;
@@ -232,6 +238,7 @@ var // currently active contextMenu trigger
 			if (e.data.trigger == 'right' && !e.originalEvent) {
 				return;
 			}
+			}
 
 //            if (!$this.hasClass('context-menu-disabled')) {
 				// we're handling the event so we'll stop it
@@ -245,6 +252,7 @@ var // currently active contextMenu trigger
                 // e.data.$menu.trigger(evt);
 
                 $currentTrigger = $this;
+//console.log('$currentTrigger', $currentTrigger);
                 if (e.data.build) {
                     var built = e.data.build($currentTrigger, e);
                     // abort if build() returned false
@@ -459,6 +467,7 @@ var // currently active contextMenu trigger
             e.stopPropagation();
         },
         key: function(e) {
+console.log('$currentTrigger', $currentTrigger, $currentTrigger.data('contextMenu'));
             var opt = $currentTrigger.data('contextMenu') || {},
                 $children = opt.$menu.children(),
                 $round;
@@ -946,6 +955,7 @@ var // currently active contextMenu trigger
             if (root === undefined) {
                 root = opt;
             }
+
             // create contextMenu
             opt.$menu = $('<ul class="context-menu-list ' + (opt.className || "") + '"></ul>').data({
                 'contextMenu': opt,
@@ -1220,6 +1230,9 @@ $.fn.contextMenu = function(operation) {
         this.first().trigger('contextmenu');
     } else if (operation.x && operation.y) {
         this.first().trigger($.Event("contextmenu", {pageX: operation.x, pageY: operation.y}));
+    } else if (operation.pageX && operation.pageY) {
+//        this.first().trigger($.Event("contextmenu", operation));
+        this.first().trigger($.Event("contextmenu", {pageX: operation.pageX, pageY: operation.pageY}));
     } else if (operation === "hide") {
         var $menu = this.data('contextMenu').$menu;
         $menu && $menu.trigger('contextmenu:hide');
@@ -1230,14 +1243,14 @@ $.fn.contextMenu = function(operation) {
 			menu.disabled = false;
 console.log('enabled menu at', this.selector)
 		}
-		else {
-console.log('Invalid enabling of context menu');
-console.trace();
-console.log('this', this);
-console.log('selector', this.selector);
-console.log('namespaces', namespaces);
-console.log('menus', menus);
-		}
+//		else {
+//console.log('Invalid enabling of context menu');
+//console.trace();
+//console.log('this', this);
+//console.log('selector', this.selector);
+//console.log('namespaces', namespaces);
+//console.log('menus', menus);
+//		}
 
 //        this.removeClass('context-menu-disabled');
     } else if (!operation) {
