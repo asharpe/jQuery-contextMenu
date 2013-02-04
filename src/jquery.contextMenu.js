@@ -467,7 +467,7 @@ var // currently active contextMenu trigger
             e.stopPropagation();
         },
         key: function(e) {
-console.log('$currentTrigger', $currentTrigger, $currentTrigger.data('contextMenu'));
+//console.log('$currentTrigger', $currentTrigger, $currentTrigger.data('contextMenu'));
             var opt = $currentTrigger.data('contextMenu') || {},
                 $children = opt.$menu.children(),
                 $round;
